@@ -34,17 +34,15 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-surface px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-8 shadow-sm">
-        <div className="mb-8 flex justify-center">
-          <Logo priority className="h-10 w-auto" />
-        </div>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-surface px-4 py-10">
+      <Logo priority variant="full" className="mb-8 h-14 w-auto" />
 
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-8 shadow-sm">
         <h1 className="mb-1 text-center text-xl font-semibold text-ink">
-          Sign in
+          Welcome back
         </h1>
         <p className="mb-6 text-center text-sm text-muted">
-          Use the email and password provided by UniPlace.
+          Sign in with the email and password from UniPlace.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

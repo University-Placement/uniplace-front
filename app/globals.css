@@ -9,15 +9,15 @@
   --background: #ffffff;
   --foreground: #1f2933;
 
-  /* Brand palette */
-  --up-blue: #3b38e5; /* "Uni" box / primary action */
-  --up-blue-dark: #2b28c2;
-  --up-yellow: #f4ce5c; /* "Place" wordmark */
-  --up-orange: #e8552e; /* llama accents */
-  --up-ink: #1f2933; /* primary text */
+  /* Brand palette — Lala colors */
+  --up-blue: #4235e4; /* "Uni" box / primary action */
+  --up-blue-dark: #3528c9;
+  --up-yellow: #f7cf46; /* "Place" wordmark / highlights */
+  --up-orange: #ff5733; /* llama accents */
+  --up-ink: #2a2a2a; /* primary text (charcoal) */
   --up-muted: #6b7280; /* secondary text */
-  --up-line: #e5e7eb; /* hairline borders */
-  --up-surface: #f8f9fb; /* subtle panel background */
+  --up-line: #e6e7ec; /* hairline borders */
+  --up-surface: #f6f7fb; /* subtle panel background */
 }
 
 @theme inline {

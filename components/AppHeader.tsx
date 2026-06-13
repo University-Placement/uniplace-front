@@ -19,7 +19,7 @@ export function AppHeader({ admin = false }: { admin?: boolean }) {
     <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Link href={admin ? "/admin" : "/dashboard"} className="flex items-center">
-          <Logo className="h-7 w-auto" />
+          <Logo className="h-9 w-auto" />
           {admin && (
             <span className="ml-3 rounded-md bg-surface px-2 py-0.5 text-xs font-medium text-muted">
               Admin

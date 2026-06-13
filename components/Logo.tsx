@@ -1,40 +1,40 @@
 import Image from "next/image";
 
 /**
- * UniPlace logo.
+ * UniPlace logo — the graduation-llama mascot in Lala's colors.
  *
- * The wordmark ("UniPlace") is a built-in SVG so the brand always renders.
- * To show the full mascot logo (the graduation-cap llama), drop the artwork at
- * `public/uniplace-logo.png` and pass `variant="full"`.
+ * variant="full"     → mascot + "UniPlace" wordmark (default)
+ * variant="mark"     → mascot only (compact spots, favicons)
+ * variant="wordmark" → "UniPlace" text only
  */
 export function Logo({
-  variant = "wordmark",
+  variant = "full",
   className = "",
   priority = false,
 }: {
-  variant?: "wordmark" | "full";
+  variant?: "full" | "mark" | "wordmark";
   className?: string;
   priority?: boolean;
 }) {
-  if (variant === "full") {
-    return (
-      <Image
-        src="/uniplace-logo.png"
-        alt="UniPlace"
-        width={300}
-        height={170}
-        priority={priority}
-        className={className}
-      />
-    );
-  }
+  const src =
+    variant === "mark"
+      ? "/uniplace-mark.svg"
+      : variant === "wordmark"
+        ? "/uniplace-wordmark.svg"
+        : "/uniplace-logo.svg";
+  const dims =
+    variant === "mark"
+      ? { width: 130, height: 140 }
+      : variant === "wordmark"
+        ? { width: 180, height: 48 }
+        : { width: 235, height: 75 };
 
   return (
     <Image
-      src="/uniplace-wordmark.svg"
+      src={src}
       alt="UniPlace"
-      width={180}
-      height={48}
+      width={dims.width}
+      height={dims.height}
       priority={priority}
       className={className}
     />

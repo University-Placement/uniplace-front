@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppHeader } from "@/components/AppHeader";
+import { Logo } from "@/components/Logo";
 import { listLiveMockdays, startAttempt } from "@/lib/exam-api";
 import type { LiveMockday } from "@/lib/types";
 
@@ -52,10 +53,11 @@ export default function DashboardPage() {
           {loading ? (
             <p className="text-muted">Loading…</p>
           ) : mockdays.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-line bg-surface p-10 text-center">
-              <p className="text-muted">
-                No Mockday is live right now. Check back during your scheduled
-                time block.
+            <div className="flex flex-col items-center rounded-2xl border border-dashed border-line bg-surface p-12 text-center">
+              <Logo variant="mark" className="mb-4 h-20 w-auto opacity-90" />
+              <p className="font-medium text-ink">No Mockday is live right now</p>
+              <p className="mt-1 text-sm text-muted">
+                Check back during your scheduled time block.
               </p>
             </div>
           ) : (
