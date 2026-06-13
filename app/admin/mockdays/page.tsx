@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
   createMockday,
@@ -106,12 +107,20 @@ export default function MockdaysPage() {
                     : "no window set"}
                 </p>
               </div>
-              <button
-                onClick={() => setEditing(m)}
-                className="rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-surface"
-              >
-                Configure
-              </button>
+              <div className="flex gap-2">
+                <Link
+                  href={`/admin/mockdays/${m.id}/results`}
+                  className="rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-surface"
+                >
+                  Results
+                </Link>
+                <button
+                  onClick={() => setEditing(m)}
+                  className="rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-surface"
+                >
+                  Configure
+                </button>
+              </div>
             </div>
           ))
         )}

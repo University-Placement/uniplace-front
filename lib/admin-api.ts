@@ -101,3 +101,36 @@ export function updateMockday(id: number, body: Partial<Mockday>) {
 export function deleteMockday(id: number) {
   return apiFetch<void>(`/admin/mockdays/${id}`, { method: "DELETE" });
 }
+
+export interface MockdayResults {
+  mockday: { id: number; name: string; status: string };
+  summary: {
+    total_attempts: number;
+    submitted: number;
+    in_progress: number;
+    avg_total_raw: number | null;
+  };
+  attempts: {
+    attempt_id: number;
+    email: string | null;
+    full_name: string | null;
+    status: string;
+    started_at: string | null;
+    submitted_at: string | null;
+    modules_completed: number;
+    rw_raw: number;
+    math_raw: number;
+    total_raw: number;
+    current: { section: string; module: number; seconds_remaining: number } | null;
+    module_scores: {
+      section: string;
+      module: number;
+      raw_score: number | null;
+      submitted: boolean;
+    }[];
+  }[];
+}
+
+export function getMockdayResults(id: number) {
+  return apiFetch<MockdayResults>(`/admin/mockdays/${id}/results`);
+}
