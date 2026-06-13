@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Strip any trailing slash so `${API_URL}${path}` never produces a double slash
+// (a trailing slash in NEXT_PUBLIC_API_URL would otherwise 404 every call).
+const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(
+  /\/+$/,
+  "",
+);
 
 /**
  * Thin fetch wrapper for the uniplace-api (FastAPI) backend.
