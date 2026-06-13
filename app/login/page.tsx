@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/Logo";
 
+const NAV = ["Home", "About", "Resources", "Contact"];
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -32,105 +34,73 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-2">
-      {/* Brand panel */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-brand p-12 text-white lg:flex">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-accent-yellow/15"
-        />
-
-        <div className="relative">
-          <span className="text-sm font-medium uppercase tracking-widest text-white/70">
-            UniPlace
-          </span>
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* Top nav */}
+      <header className="border-b border-line">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+          <Logo variant="wordmark" priority className="h-7 w-auto" />
+          <nav className="hidden items-center gap-8 text-sm font-medium text-ink/80 md:flex">
+            {NAV.map((item) => (
+              <a key={item} href="#" className="transition hover:text-brand">
+                {item}
+              </a>
+            ))}
+          </nav>
         </div>
+      </header>
 
-        <div className="relative">
-          <Logo variant="mark" priority className="mb-8 h-32 w-auto" />
-          <h1 className="text-5xl font-extrabold tracking-tight">
-            <span className="text-white">Uni</span>
-            <span className="text-accent-yellow">Place</span>
+      {/* Hero */}
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-6 py-12 lg:grid-cols-2">
+        {/* Left: headline + description + sign-in card */}
+        <div>
+          <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl">
+            Your path to
+            <br />
+            ace the{" "}
+            <span className="underline decoration-brand decoration-4 underline-offset-[6px]">
+              DSAT
+            </span>{" "}
+            starts here.
           </h1>
-          <p className="mt-3 text-lg font-medium text-white/90">
-            University Placement · Digital SAT Hub
+          <p className="mt-5 max-w-md text-lg text-muted">
+            UniPlace helps Lala&apos;s students navigate the Digital SAT process
+            with personalized guidance, resources, and support.
           </p>
-          <p className="mt-4 max-w-md text-white/70">
-            Practice the digital SAT the way test day really feels — adaptive
-            modules, real timing, and your scores and study plan all in one place.
-          </p>
-        </div>
 
-        <div className="relative flex gap-8 text-sm text-white/70">
-          <div>
-            <div className="text-2xl font-bold text-white">2h 14m</div>
-            full-length exam
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-white">400–1600</div>
-            scored like the real thing
-          </div>
-        </div>
-      </div>
-
-      {/* Form panel */}
-      <div className="flex items-center justify-center bg-surface px-4 py-12">
-        <div className="w-full max-w-sm">
-          {/* logo for small screens */}
-          <Logo
-            priority
-            variant="full"
-            className="mx-auto mb-8 h-12 w-auto lg:hidden"
-          />
-
-          <div className="rounded-2xl border border-line bg-white p-8 shadow-sm">
-            <h2 className="text-xl font-semibold text-ink">Welcome back</h2>
-            <p className="mb-6 mt-1 text-sm text-muted">
-              Sign in with the email and password from UniPlace.
+          {/* Sign-in card */}
+          <div className="mt-8 w-full max-w-sm rounded-2xl border border-line bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-ink">Sign in to your hub</h2>
+            <p className="mb-5 mt-1 text-sm text-muted">
+              Use the email and password from UniPlace.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink">
-                  Email
-                </label>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                placeholder="Email"
+              />
+              <div className="relative">
                 <input
-                  type="email"
+                  type={showPw ? "text" : "password"}
                   required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-                  placeholder="you@example.com"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full rounded-lg border border-line px-3 py-2.5 pr-16 text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  placeholder="Password"
                 />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-ink">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPw ? "text" : "password"}
-                    required
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border border-line px-3 py-2.5 pr-16 text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20"
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPw((v) => !v)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-muted hover:text-ink"
-                  >
-                    {showPw ? "Hide" : "Show"}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-xs font-medium text-muted hover:text-ink"
+                >
+                  {showPw ? "Hide" : "Show"}
+                </button>
               </div>
 
               {error && (
@@ -144,16 +114,17 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full rounded-lg bg-brand px-4 py-2.5 font-medium text-white transition hover:bg-brand-dark disabled:opacity-60"
               >
-                {loading ? "Signing in…" : "Sign in"}
+                {loading ? "Signing in…" : "Get Started"}
               </button>
             </form>
           </div>
-
-          <p className="mt-6 text-center text-xs text-muted">
-            Trouble signing in? Reach out to the UniPlace team.
-          </p>
         </div>
-      </div>
-    </main>
+
+        {/* Right: mascot */}
+        <div className="flex justify-center lg:justify-end">
+          <Logo variant="mark" className="h-72 w-auto sm:h-80" />
+        </div>
+      </main>
+    </div>
   );
 }
