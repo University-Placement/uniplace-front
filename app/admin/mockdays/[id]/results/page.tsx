@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getMockdayResults, type MockdayResults } from "@/lib/admin-api";
@@ -15,6 +15,9 @@ const STATUS_STYLE: Record<string, string> = {
   expired: "bg-line text-muted",
 };
 
+const MOD_LABEL = (s: string, m: number) =>
+  `${s === "rw" ? "R&W" : "Math"} M${m}`;
+
 export default function ResultsPage() {
   const params = useParams<{ id: string }>();
   const mockdayId = Number(params.id);
@@ -22,6 +25,7 @@ export default function ResultsPage() {
   const [data, setData] = useState<MockdayResults | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [auto, setAuto] = useState(true);
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -35,7 +39,6 @@ export default function ResultsPage() {
     void load();
   }, [load]);
 
-  // Live monitoring: poll every 10s while enabled.
   useEffect(() => {
     if (!auto) return;
     const t = setInterval(() => void load(), 10000);
@@ -71,7 +74,8 @@ export default function ResultsPage() {
             {mockday.name} — Results
           </h1>
           <p className="mt-1 text-muted">
-            Status <b>{mockday.status}</b>
+            Status <b>{mockday.status}</b> · scores are for staff review only —
+            students don&apos;t see them in-app.
           </p>
         </div>
         <label className="flex items-center gap-2 text-sm text-muted">
@@ -84,18 +88,13 @@ export default function ResultsPage() {
         </label>
       </div>
 
-      {/* Summary */}
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Stat label="Attempts" value={summary.total_attempts} />
         <Stat label="In progress" value={summary.in_progress} />
         <Stat label="Submitted" value={summary.submitted} />
-        <Stat
-          label="Avg raw total"
-          value={summary.avg_total_raw ?? "—"}
-        />
+        <Stat label="Avg total (400–1600)" value={summary.avg_total_scaled ?? "—"} />
       </div>
 
-      {/* Table */}
       <div className="mt-8 overflow-x-auto rounded-2xl border border-line">
         <table className="w-full text-sm">
           <thead className="bg-surface text-left text-muted">
@@ -118,49 +117,96 @@ export default function ResultsPage() {
             ) : (
               attempts.map((a) => {
                 const done = a.status === "submitted";
+                const isOpen = expanded === a.attempt_id;
                 return (
-                  <tr key={a.attempt_id} className="border-t border-line">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-ink">
-                        {a.full_name ?? "—"}
-                      </div>
-                      <div className="text-xs text-muted">{a.email}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs font-medium ${
-                          STATUS_STYLE[a.status] ?? "bg-surface text-muted"
-                        }`}
-                      >
-                        {a.status === "in_progress" ? "in progress" : a.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 tabular-nums">
-                      {done ? a.rw_raw : "—"}
-                    </td>
-                    <td className="px-4 py-3 tabular-nums">
-                      {done ? a.math_raw : "—"}
-                    </td>
-                    <td className="px-4 py-3 font-semibold tabular-nums">
-                      {done ? a.total_raw : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-muted">
-                      {a.current ? (
-                        <span>
-                          {a.current.section === "rw" ? "R&W" : "Math"} M
-                          {a.current.module} ·{" "}
-                          <span className="font-mono">
-                            {fmt(a.current.seconds_remaining)}
-                          </span>{" "}
-                          left
+                  <Fragment key={a.attempt_id}>
+                    <tr
+                      onClick={() =>
+                        setExpanded(isOpen ? null : a.attempt_id)
+                      }
+                      className="cursor-pointer border-t border-line hover:bg-surface/50"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-ink">
+                          {a.full_name ?? "—"}
+                        </div>
+                        <div className="text-xs text-muted">{a.email}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded px-2 py-0.5 text-xs font-medium ${
+                            STATUS_STYLE[a.status] ?? "bg-surface text-muted"
+                          }`}
+                        >
+                          {a.status === "in_progress" ? "in progress" : a.status}
                         </span>
-                      ) : done ? (
-                        `${a.modules_completed}/4 modules`
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="px-4 py-3 tabular-nums">
+                        {done ? a.rw_scaled : "—"}
+                      </td>
+                      <td className="px-4 py-3 tabular-nums">
+                        {done ? a.math_scaled : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-base font-semibold tabular-nums text-brand">
+                        {done ? a.total_scaled : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-muted">
+                        {a.current ? (
+                          <span>
+                            {MOD_LABEL(a.current.section, a.current.module)} ·{" "}
+                            <span className="font-mono">
+                              {fmt(a.current.seconds_remaining)}
+                            </span>{" "}
+                            left
+                          </span>
+                        ) : done ? (
+                          `${a.modules_completed}/4 modules`
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr className="border-t border-line bg-surface/40">
+                        <td colSpan={6} className="px-4 py-4">
+                          <div className="mb-3 flex flex-wrap gap-6 text-xs text-muted">
+                            <span>
+                              Raw — R&amp;W <b className="text-ink">{a.rw_raw}</b>, Math{" "}
+                              <b className="text-ink">{a.math_raw}</b>, Total{" "}
+                              <b className="text-ink">{a.total_raw}</b>
+                            </span>
+                            {done && (
+                              <span>
+                                Scaled — R&amp;W <b className="text-ink">{a.rw_scaled}</b>,
+                                Math <b className="text-ink">{a.math_scaled}</b>, Total{" "}
+                                <b className="text-ink">{a.total_scaled}</b>
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {a.module_scores.map((m) => (
+                              <div
+                                key={`${m.section}${m.module}`}
+                                className="rounded-lg border border-line bg-white px-3 py-2 text-center"
+                              >
+                                <div className="text-sm font-semibold text-ink">
+                                  {m.submitted ? (m.raw_score ?? 0) : "—"}
+                                </div>
+                                <div className="text-[11px] text-muted">
+                                  {MOD_LABEL(m.section, m.module)}
+                                </div>
+                              </div>
+                            ))}
+                            {a.module_scores.length === 0 && (
+                              <span className="text-xs text-muted">
+                                Not started.
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })
             )}
@@ -169,8 +215,9 @@ export default function ResultsPage() {
       </div>
 
       <p className="mt-4 text-xs text-muted">
-        Scores are raw correct counts (R&amp;W out of 54, Math out of 44). Scaled
-        200–800 scores will appear once a curve is configured.
+        Section scores are 200–800 and the total is 400–1600, estimated from a raw
+        linear curve (College Board doesn&apos;t publish their exact conversion).
+        Click a student to see the per-module breakdown.
       </p>
     </main>
   );

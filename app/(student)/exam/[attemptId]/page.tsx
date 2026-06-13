@@ -127,40 +127,27 @@ function BreakTimer({ seconds }: { seconds: number }) {
 
 function ScoreReport({ state }: { state: AttemptState }) {
   const router = useRouter();
-  const sc = state.score;
+  void state;
   return (
     <Centered>
       <div className="w-full max-w-md rounded-2xl border border-line bg-white p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-semibold text-ink">Mockday complete</h1>
-        <p className="mt-1 text-muted">Nice work — here are your raw scores.</p>
-
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <Stat label="Reading & Writing" value={sc?.rw_raw ?? 0} />
-          <Stat label="Math" value={sc?.math_raw ?? 0} />
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-2xl text-green-700">
+          ✓
         </div>
-
-        <p className="mt-6 text-xs text-muted">
-          Scaled 200–800 section scores will appear here once the score curve is
-          configured for this Mockday.
+        <h1 className="text-2xl font-semibold text-ink">All done!</h1>
+        <p className="mt-2 text-muted">
+          Your responses have been submitted. Scores are reviewed by the UniPlace
+          team and shared with you afterward — they won&apos;t appear here.
         </p>
 
         <button
           onClick={() => router.push("/dashboard")}
-          className="mt-6 w-full rounded-lg border border-line px-5 py-3 font-medium hover:bg-surface"
+          className="mt-6 w-full rounded-lg bg-brand px-5 py-3 font-medium text-white hover:bg-brand-dark"
         >
           Back to dashboard
         </button>
       </div>
     </Centered>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-xl bg-surface p-4">
-      <div className="text-3xl font-semibold text-ink">{value}</div>
-      <div className="mt-1 text-xs text-muted">{label} correct</div>
-    </div>
   );
 }
 

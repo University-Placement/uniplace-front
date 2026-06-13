@@ -109,6 +109,7 @@ export interface MockdayResults {
     submitted: number;
     in_progress: number;
     avg_total_raw: number | null;
+    avg_total_scaled: number | null;
   };
   attempts: {
     attempt_id: number;
@@ -121,6 +122,9 @@ export interface MockdayResults {
     rw_raw: number;
     math_raw: number;
     total_raw: number;
+    rw_scaled: number | null;
+    math_scaled: number | null;
+    total_scaled: number | null;
     current: { section: string; module: number; seconds_remaining: number } | null;
     module_scores: {
       section: string;
