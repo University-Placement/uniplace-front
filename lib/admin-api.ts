@@ -125,6 +125,7 @@ export interface MockdayResults {
     rw_scaled: number | null;
     math_scaled: number | null;
     total_scaled: number | null;
+    released: boolean;
     current: { section: string; module: number; seconds_remaining: number } | null;
     module_scores: {
       section: string;
@@ -137,4 +138,29 @@ export interface MockdayResults {
 
 export function getMockdayResults(id: number) {
   return apiFetch<MockdayResults>(`/admin/mockdays/${id}/results`);
+}
+
+export function editScore(
+  attemptId: number,
+  body: { rw_scaled?: number; math_scaled?: number; total_scaled?: number },
+) {
+  return apiFetch(`/admin/attempts/${attemptId}/score`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export function releaseScore(attemptId: number) {
+  return apiFetch(`/admin/attempts/${attemptId}/release`, { method: "POST" });
+}
+
+export function unreleaseScore(attemptId: number) {
+  return apiFetch(`/admin/attempts/${attemptId}/unrelease`, { method: "POST" });
+}
+
+export function releaseAll(mockdayId: number) {
+  return apiFetch<{ released_count: number }>(
+    `/admin/mockdays/${mockdayId}/release-all`,
+    { method: "POST" },
+  );
 }

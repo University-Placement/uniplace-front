@@ -3,7 +3,14 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getMockdayResults, type MockdayResults } from "@/lib/admin-api";
+import {
+  editScore,
+  getMockdayResults,
+  releaseAll,
+  releaseScore,
+  unreleaseScore,
+  type MockdayResults,
+} from "@/lib/admin-api";
 
 function fmt(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -78,14 +85,27 @@ export default function ResultsPage() {
             students don&apos;t see them in-app.
           </p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <input
-            type="checkbox"
-            checked={auto}
-            onChange={(e) => setAuto(e.target.checked)}
-          />
-          Auto-refresh (10s)
-        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input
+              type="checkbox"
+              checked={auto}
+              onChange={(e) => setAuto(e.target.checked)}
+            />
+            Auto-refresh (10s)
+          </label>
+          <button
+            onClick={async () => {
+              if (!confirm("Release scores to ALL submitted students for this Mockday?"))
+                return;
+              await releaseAll(mockdayId);
+              await load();
+            }}
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
+          >
+            Release all
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -105,12 +125,13 @@ export default function ResultsPage() {
               <th className="px-4 py-3 font-medium">Math</th>
               <th className="px-4 py-3 font-medium">Total</th>
               <th className="px-4 py-3 font-medium">Progress</th>
+              <th className="px-4 py-3 font-medium">Release</th>
             </tr>
           </thead>
           <tbody>
             {attempts.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted">
                   No one has started this Mockday yet.
                 </td>
               </tr>
@@ -165,10 +186,40 @@ export default function ResultsPage() {
                           "—"
                         )}
                       </td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        {done ? (
+                          a.released ? (
+                            <button
+                              onClick={async () => {
+                                await unreleaseScore(a.attempt_id);
+                                await load();
+                              }}
+                              className="rounded-lg border border-green-300 bg-green-50 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-100"
+                            >
+                              ✓ Released
+                            </button>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                await releaseScore(a.attempt_id);
+                                await load();
+                              }}
+                              className="rounded-lg bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-dark"
+                            >
+                              Release
+                            </button>
+                          )
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
                     </tr>
                     {isOpen && (
                       <tr className="border-t border-line bg-surface/40">
-                        <td colSpan={6} className="px-4 py-4">
+                        <td colSpan={7} className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                          {done && (
+                            <EditTotal attempt={a} onSaved={load} />
+                          )}
                           <div className="mb-3 flex flex-wrap gap-6 text-xs text-muted">
                             <span>
                               Raw — R&amp;W <b className="text-ink">{a.rw_raw}</b>, Math{" "}
@@ -228,6 +279,63 @@ function Stat({ label, value }: { label: string; value: number | string }) {
     <div className="rounded-2xl border border-line bg-white p-4">
       <div className="text-2xl font-semibold text-ink">{value}</div>
       <div className="mt-1 text-xs text-muted">{label}</div>
+    </div>
+  );
+}
+
+function EditTotal({
+  attempt,
+  onSaved,
+}: {
+  attempt: MockdayResults["attempts"][number];
+  onSaved: () => void | Promise<void>;
+}) {
+  const [val, setVal] = useState(String(attempt.total_scaled ?? ""));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function save() {
+    const n = Number(val);
+    if (!Number.isFinite(n)) return;
+    setSaving(true);
+    setSaved(false);
+    try {
+      await editScore(attempt.attempt_id, { total_scaled: n });
+      setSaved(true);
+      await onSaved();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <label className="text-xs text-muted">Override total (400–1600):</label>
+      <input
+        type="number"
+        min={400}
+        max={1600}
+        step={10}
+        value={val}
+        onChange={(e) => {
+          setVal(e.target.value);
+          setSaved(false);
+        }}
+        className="w-24 rounded-lg border border-line px-2 py-1 text-sm tabular-nums"
+      />
+      <button
+        onClick={save}
+        disabled={saving}
+        className="rounded-lg border border-line px-3 py-1 text-xs font-medium hover:bg-surface disabled:opacity-60"
+      >
+        {saving ? "Saving…" : "Save"}
+      </button>
+      {saved && <span className="text-xs text-green-700">Saved</span>}
+      {attempt.released && (
+        <span className="text-xs text-amber-600">
+          Released — edits update what the student sees.
+        </span>
+      )}
     </div>
   );
 }

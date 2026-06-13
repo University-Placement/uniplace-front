@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
 import { Logo } from "@/components/Logo";
 import { listLiveMockdays, startAttempt } from "@/lib/exam-api";
@@ -38,10 +39,33 @@ export default function DashboardPage() {
     <>
       <AppHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
-        <h1 className="text-2xl font-semibold text-ink">Your Mockdays</h1>
+        <h1 className="text-2xl font-semibold text-ink">Your hub</h1>
         <p className="mt-1 text-muted">
-          When a Mockday is live, start it here.
+          Take your Mockdays, review results, and plan your prep.
         </p>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/results"
+            className="rounded-2xl border border-line bg-white p-6 transition hover:border-brand hover:shadow-sm"
+          >
+            <h2 className="font-semibold text-ink">My Results</h2>
+            <p className="mt-1 text-sm text-muted">
+              Scores and areas to focus on, once released.
+            </p>
+          </Link>
+          <Link
+            href="/board"
+            className="rounded-2xl border border-line bg-white p-6 transition hover:border-brand hover:shadow-sm"
+          >
+            <h2 className="font-semibold text-ink">Study Board</h2>
+            <p className="mt-1 text-sm text-muted">
+              Your to-dos, study plan, and goals.
+            </p>
+          </Link>
+        </div>
+
+        <h2 className="mt-10 text-lg font-semibold text-ink">Live now</h2>
 
         {error && (
           <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
