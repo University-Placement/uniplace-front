@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Desmos test/demo API key (Desmos publishes this for development). For
-// production, request a free key at https://www.desmos.com/api and set it here.
-const DESMOS_API_KEY = "dcb31709b452b1cf9dc26972add0fda6";
+// UniPlace's Desmos API key (free tier). Override via NEXT_PUBLIC_DESMOS_API_KEY.
+const DESMOS_API_KEY =
+  process.env.NEXT_PUBLIC_DESMOS_API_KEY ?? "b9ec1d398b88492486d3c4878624247c";
 const SRC = `https://www.desmos.com/api/v1.11/calculator.js?apiKey=${DESMOS_API_KEY}`;
 
 declare global {
