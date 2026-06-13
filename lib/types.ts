@@ -8,7 +8,8 @@ export type MockdayStatus = "draft" | "scheduled" | "live" | "closed";
 
 export interface Choice {
   id: string; // "A" | "B" | ...
-  text: string;
+  text?: string;
+  image?: string; // URL when the choice is typeset content rendered as an image
 }
 
 export interface Question {
@@ -59,6 +60,7 @@ export interface PublicQuestion {
   type: QuestionType;
   passage: string | null;
   stem: string;
+  stem_image: string | null;
   choices: Choice[] | null;
 }
 
