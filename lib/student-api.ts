@@ -29,6 +29,7 @@ export interface Task {
   category: TaskCategory;
   status: TaskStatus;
   position: number;
+  assigned: boolean;
 }
 
 export function getMyResults() {

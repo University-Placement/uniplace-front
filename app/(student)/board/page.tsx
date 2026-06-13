@@ -35,6 +35,8 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<TaskCategory>("task");
+  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [overCol, setOverCol] = useState<TaskStatus | null>(null);
 
   async function load() {
     setTasks(await listTasks());
@@ -51,17 +53,20 @@ export default function BoardPage() {
     setTitle("");
   }
 
-  async function move(t: Task, dir: -1 | 1) {
-    const order: TaskStatus[] = ["todo", "doing", "done"];
-    const next = order[order.indexOf(t.status) + dir];
-    if (!next) return;
-    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, status: next } : x)));
-    await updateTask(t.id, { status: next });
+  async function setStatus(id: number, status: TaskStatus) {
+    setTasks((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x)));
+    await updateTask(id, { status });
   }
 
   async function remove(t: Task) {
     setTasks((prev) => prev.filter((x) => x.id !== t.id));
     await deleteTask(t.id);
+  }
+
+  function onDrop(status: TaskStatus) {
+    if (draggingId != null) void setStatus(draggingId, status);
+    setDraggingId(null);
+    setOverCol(null);
   }
 
   return (
@@ -70,10 +75,10 @@ export default function BoardPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
         <h1 className="text-2xl font-semibold text-ink">Study Board</h1>
         <p className="mt-1 text-muted">
-          Plan your prep — track to-dos, study tasks, and goals.
+          Plan your prep — drag cards across columns to track to-dos, study tasks,
+          and goals.
         </p>
 
-        {/* Add card */}
         <div className="mt-6 flex flex-wrap gap-2">
           <input
             value={title}
@@ -100,12 +105,25 @@ export default function BoardPage() {
           </button>
         </div>
 
-        {/* Columns */}
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {COLUMNS.map((col) => {
             const items = tasks.filter((t) => t.status === col.key);
+            const isOver = overCol === col.key;
             return (
-              <div key={col.key} className="rounded-2xl border border-line bg-surface/60 p-3">
+              <div
+                key={col.key}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setOverCol(col.key);
+                }}
+                onDragLeave={() => setOverCol((c) => (c === col.key ? null : c))}
+                onDrop={() => onDrop(col.key)}
+                className={`rounded-2xl border p-3 transition ${
+                  isOver
+                    ? "border-brand bg-brand/5"
+                    : "border-line bg-surface/60"
+                }`}
+              >
                 <div className="mb-3 flex items-center justify-between px-1">
                   <h2 className="text-sm font-semibold text-ink">{col.label}</h2>
                   <span className="rounded-full bg-white px-2 py-0.5 text-xs text-muted">
@@ -117,49 +135,47 @@ export default function BoardPage() {
                     <p className="px-1 text-sm text-muted">Loading…</p>
                   ) : items.length === 0 ? (
                     <p className="px-1 py-6 text-center text-xs text-muted">
-                      Nothing here yet.
+                      {isOver ? "Drop here" : "Nothing here yet."}
                     </p>
                   ) : (
                     items.map((t) => (
                       <div
                         key={t.id}
-                        className="rounded-xl border border-line bg-white p-3 shadow-sm"
+                        draggable
+                        onDragStart={() => setDraggingId(t.id)}
+                        onDragEnd={() => {
+                          setDraggingId(null);
+                          setOverCol(null);
+                        }}
+                        className={`cursor-grab rounded-xl border border-line bg-white p-3 shadow-sm active:cursor-grabbing ${
+                          draggingId === t.id ? "opacity-50" : ""
+                        }`}
                       >
                         <div className="mb-2 flex items-center justify-between">
                           <span
-                            className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${CATEGORY_STYLE[t.category]}`}
+                            className={`rounded px-1.5 py-0.5 text-[11px] font-medium ${
+                              t.assigned
+                                ? "bg-brand text-white"
+                                : CATEGORY_STYLE[t.category]
+                            }`}
                           >
-                            {CATEGORY_LABEL[t.category]}
+                            {t.assigned ? "Homework" : CATEGORY_LABEL[t.category]}
                           </span>
-                          <button
-                            onClick={() => remove(t)}
-                            className="text-xs text-muted hover:text-red-600"
-                            aria-label="Delete"
-                          >
-                            ✕
-                          </button>
+                          {!t.assigned && (
+                            <button
+                              onClick={() => remove(t)}
+                              className="text-xs text-muted hover:text-red-600"
+                              aria-label="Delete"
+                            >
+                              ✕
+                            </button>
+                          )}
                         </div>
                         <p
                           className={`text-sm text-ink ${t.status === "done" ? "line-through opacity-60" : ""}`}
                         >
                           {t.title}
                         </p>
-                        <div className="mt-2 flex justify-between">
-                          <button
-                            onClick={() => move(t, -1)}
-                            disabled={t.status === "todo"}
-                            className="rounded px-2 py-0.5 text-xs text-muted hover:bg-surface disabled:opacity-30"
-                          >
-                            ← Back
-                          </button>
-                          <button
-                            onClick={() => move(t, 1)}
-                            disabled={t.status === "done"}
-                            className="rounded px-2 py-0.5 text-xs font-medium text-brand hover:bg-brand/5 disabled:opacity-30"
-                          >
-                            Next →
-                          </button>
-                        </div>
                       </div>
                     ))
                   )}
@@ -168,6 +184,7 @@ export default function BoardPage() {
             );
           })}
         </div>
+        <p className="mt-4 text-xs text-muted">Tip: drag a card to another column to move it.</p>
       </main>
     </>
   );

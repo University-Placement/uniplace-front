@@ -18,6 +18,11 @@ const SECTIONS = [
     title: "Mockdays",
     desc: "Pick the six forms, schedule the window, and go live.",
   },
+  {
+    href: "/admin/homework",
+    title: "Homework",
+    desc: "Assign study tasks to students' boards.",
+  },
 ];
 
 export default function AdminHome() {

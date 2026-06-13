@@ -164,3 +164,25 @@ export function releaseAll(mockdayId: number) {
     { method: "POST" },
   );
 }
+
+export interface Student {
+  id: string;
+  email: string;
+  full_name: string | null;
+}
+
+export function listStudents() {
+  return apiFetch<Student[]>("/admin/students");
+}
+
+export function assignHomework(body: {
+  title: string;
+  notes?: string;
+  category?: string;
+  student_ids?: string[];
+}) {
+  return apiFetch<{ assigned_to: number }>("/admin/homework", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
