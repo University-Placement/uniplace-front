@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   assignHomework,
+  getHomeworkTracking,
   listStudents,
+  type HomeworkAssignment,
   type Student,
 } from "@/lib/admin-api";
 
@@ -16,10 +18,17 @@ export default function HomeworkPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [tracking, setTracking] = useState<HomeworkAssignment[]>([]);
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  const loadTracking = useCallback(() => {
+    getHomeworkTracking().then(setTracking).catch(() => {});
+  }, []);
 
   useEffect(() => {
     listStudents().then(setStudents).catch(() => {});
-  }, []);
+    loadTracking();
+  }, [loadTracking]);
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -46,6 +55,7 @@ export default function HomeworkPage() {
       setTitle("");
       setNotes("");
       setSelected(new Set());
+      loadTracking();
     } finally {
       setSaving(false);
     }
@@ -146,6 +156,92 @@ export default function HomeworkPage() {
           {saving ? "Assigning…" : "Assign homework"}
         </button>
       </div>
+
+      {/* Tracking */}
+      <div className="mt-10 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-ink">Tracking</h2>
+        <button
+          onClick={loadTracking}
+          className="rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-surface"
+        >
+          Refresh
+        </button>
+      </div>
+
+      {tracking.length === 0 ? (
+        <p className="mt-4 rounded-2xl border border-dashed border-line bg-surface p-8 text-center text-muted">
+          No homework assigned yet.
+        </p>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {tracking.map((a) => {
+            const pct = a.total ? Math.round((100 * a.counts.done) / a.total) : 0;
+            const isOpen = expanded === a.assignment_id;
+            return (
+              <div
+                key={a.assignment_id}
+                className="rounded-2xl border border-line bg-white"
+              >
+                <button
+                  onClick={() => setExpanded(isOpen ? null : a.assignment_id)}
+                  className="flex w-full items-center gap-4 px-5 py-4 text-left"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-ink">{a.title}</p>
+                    <p className="text-xs text-muted">
+                      {a.counts.done}/{a.total} done · {a.counts.doing} in progress ·{" "}
+                      {a.counts.todo} to do
+                    </p>
+                  </div>
+                  <div className="hidden w-40 sm:block">
+                    <div className="h-2 overflow-hidden rounded-full bg-surface">
+                      <div
+                        className="h-full rounded-full bg-green-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="w-12 text-right text-sm font-semibold tabular-nums text-ink">
+                    {pct}%
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div className="border-t border-line px-5 py-3">
+                    <div className="grid gap-1.5 sm:grid-cols-2">
+                      {a.students.map((s) => (
+                        <div
+                          key={s.email}
+                          className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-surface"
+                        >
+                          <span className="truncate text-ink">
+                            {s.full_name ?? s.email}
+                          </span>
+                          <span
+                            className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${
+                              s.status === "done"
+                                ? "bg-green-100 text-green-700"
+                                : s.status === "doing"
+                                  ? "bg-accent-yellow/30 text-ink"
+                                  : "bg-surface text-muted"
+                            }`}
+                          >
+                            {s.status === "doing"
+                              ? "in progress"
+                              : s.status === "done"
+                                ? "done"
+                                : "to do"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </main>
   );
 }

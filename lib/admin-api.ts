@@ -181,8 +181,22 @@ export function assignHomework(body: {
   category?: string;
   student_ids?: string[];
 }) {
-  return apiFetch<{ assigned_to: number }>("/admin/homework", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+  return apiFetch<{ assigned_to: number; assignment_id: string }>(
+    "/admin/homework",
+    { method: "POST", body: JSON.stringify(body) },
+  );
+}
+
+export interface HomeworkAssignment {
+  assignment_id: string;
+  title: string;
+  category: string;
+  created_at: string | null;
+  total: number;
+  counts: { todo: number; doing: number; done: number };
+  students: { full_name: string | null; email: string | null; status: string }[];
+}
+
+export function getHomeworkTracking() {
+  return apiFetch<HomeworkAssignment[]>("/admin/homework");
 }

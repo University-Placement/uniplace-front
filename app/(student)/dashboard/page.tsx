@@ -6,14 +6,8 @@ import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
 import { Logo } from "@/components/Logo";
 import { listLiveMockdays, startAttempt } from "@/lib/exam-api";
-import { listTasks, type Task } from "@/lib/student-api";
+import { listTasks, updateTask, type Task, type TaskStatus } from "@/lib/student-api";
 import type { LiveMockday } from "@/lib/types";
-
-const STATUS_LABEL: Record<string, string> = {
-  todo: "To do",
-  doing: "In progress",
-  done: "Done",
-};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -32,6 +26,13 @@ export default function DashboardPage() {
       .then((tasks) => setHomework(tasks.filter((t) => t.assigned)))
       .catch(() => {});
   }, []);
+
+  async function setHomeworkStatus(t: Task, status: TaskStatus) {
+    setHomework((prev) =>
+      prev.map((x) => (x.id === t.id ? { ...x, status } : x)),
+    );
+    await updateTask(t.id, { status });
+  }
 
   async function enter(m: LiveMockday) {
     setBusy(m.id);
@@ -100,9 +101,17 @@ export default function DashboardPage() {
                       {t.title}
                     </span>
                   </div>
-                  <span className="text-xs text-muted">
-                    {STATUS_LABEL[t.status]}
-                  </span>
+                  <select
+                    value={t.status}
+                    onChange={(e) =>
+                      setHomeworkStatus(t, e.target.value as TaskStatus)
+                    }
+                    className="rounded-lg border border-line px-2 py-1 text-xs text-ink"
+                  >
+                    <option value="todo">To do</option>
+                    <option value="doing">In progress</option>
+                    <option value="done">Done</option>
+                  </select>
                 </div>
               ))}
             </div>
