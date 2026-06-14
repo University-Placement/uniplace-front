@@ -6,11 +6,19 @@ import Link from "next/link";
 import { AppHeader } from "@/components/AppHeader";
 import { Logo } from "@/components/Logo";
 import { listLiveMockdays, startAttempt } from "@/lib/exam-api";
+import { listTasks, type Task } from "@/lib/student-api";
 import type { LiveMockday } from "@/lib/types";
+
+const STATUS_LABEL: Record<string, string> = {
+  todo: "To do",
+  doing: "In progress",
+  done: "Done",
+};
 
 export default function DashboardPage() {
   const router = useRouter();
   const [mockdays, setMockdays] = useState<LiveMockday[]>([]);
+  const [homework, setHomework] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +28,9 @@ export default function DashboardPage() {
       .then(setMockdays)
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
       .finally(() => setLoading(false));
+    listTasks()
+      .then((tasks) => setHomework(tasks.filter((t) => t.assigned)))
+      .catch(() => {});
   }, []);
 
   async function enter(m: LiveMockday) {
@@ -64,6 +75,39 @@ export default function DashboardPage() {
             </p>
           </Link>
         </div>
+
+        {homework.length > 0 && (
+          <section className="mt-10">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-ink">Your homework</h2>
+              <Link href="/board" className="text-sm font-medium text-brand hover:underline">
+                Open Study Board →
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {homework.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center justify-between rounded-xl border border-line bg-white p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="rounded bg-brand px-1.5 py-0.5 text-[11px] font-medium text-white">
+                      Homework
+                    </span>
+                    <span
+                      className={`text-sm text-ink ${t.status === "done" ? "line-through opacity-60" : ""}`}
+                    >
+                      {t.title}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted">
+                    {STATUS_LABEL[t.status]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <h2 className="mt-10 text-lg font-semibold text-ink">Live now</h2>
 

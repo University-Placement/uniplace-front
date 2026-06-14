@@ -8,6 +8,7 @@ import { Logo } from "@/components/Logo";
 
 const STUDENT_NAV = [
   { href: "/dashboard", label: "Mockdays" },
+  { href: "/plan", label: "Class Plan" },
   { href: "/results", label: "My Results" },
   { href: "/board", label: "Study Board" },
 ];
