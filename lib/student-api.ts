@@ -32,8 +32,29 @@ export interface Task {
   assigned: boolean;
 }
 
+export interface ReviewQuestion {
+  number: number;
+  section: "rw" | "math";
+  module: number;
+  type: "mc" | "spr";
+  domain: string | null;
+  skill: string | null;
+  difficulty: string | null;
+  stem_image: string | null;
+  choices: { id: string; image?: string; text?: string }[] | null;
+  selected_answer: string | null;
+  correct_answer: string;
+  is_correct: boolean;
+  explanation: string | null;
+  explanation_image: string | null;
+}
+
 export function getMyResults() {
   return apiFetch<MyResult[]>("/me/results");
+}
+
+export function getMyReview(attemptId: number) {
+  return apiFetch<ReviewQuestion[]>(`/me/attempts/${attemptId}/review`);
 }
 
 export function listTasks() {
