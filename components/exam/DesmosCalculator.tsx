@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// UniPlace's Desmos API key (free tier). Override via NEXT_PUBLIC_DESMOS_API_KEY.
+// Desmos API key. Defaults to Desmos's published test key, which is unrestricted
+// and works on any domain. Override with your own via NEXT_PUBLIC_DESMOS_API_KEY
+// (make sure that key allows your deployment domain in the Desmos dashboard).
 const DESMOS_API_KEY =
-  process.env.NEXT_PUBLIC_DESMOS_API_KEY ?? "b9ec1d398b88492486d3c4878624247c";
+  process.env.NEXT_PUBLIC_DESMOS_API_KEY || "dcb31709b452b1cf9dc26972add0fda6";
 const SRC = `https://www.desmos.com/api/v1.11/calculator.js?apiKey=${DESMOS_API_KEY}`;
 
 declare global {
@@ -34,20 +36,29 @@ export function DesmosCalculator({ onClose }: { onClose: () => void }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const calcRef = useRef<any>(null);
   const [pos, setPos] = useState({ x: 80, y: 90 });
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const drag = useRef<{ dx: number; dy: number } | null>(null);
 
   useEffect(() => {
     let destroyed = false;
     loadDesmos()
       .then(() => {
-        if (destroyed || !mountRef.current || !window.Desmos) return;
+        if (destroyed || !mountRef.current || !window.Desmos) {
+          if (!window.Desmos) setStatus("error");
+          return;
+        }
         calcRef.current = window.Desmos.GraphingCalculator(mountRef.current, {
           expressionsCollapsed: false,
           settingsMenu: false,
           border: false,
         });
+        setStatus("ready");
+        // Ensure it lays out correctly inside the panel.
+        setTimeout(() => calcRef.current?.resize?.(), 0);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!destroyed) setStatus("error");
+      });
     return () => {
       destroyed = true;
       if (calcRef.current) {
@@ -90,7 +101,16 @@ export function DesmosCalculator({ onClose }: { onClose: () => void }) {
           ✕
         </button>
       </div>
-      <div ref={mountRef} className="h-[420px] w-full" />
+      <div className="relative h-[420px] w-full">
+        <div ref={mountRef} className="h-full w-full" />
+        {status !== "ready" && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white p-4 text-center text-sm text-muted">
+            {status === "loading"
+              ? "Loading calculator…"
+              : "Couldn't load the calculator. Check your connection and try reopening."}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
