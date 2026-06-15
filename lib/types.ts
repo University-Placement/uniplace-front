@@ -18,6 +18,7 @@ export interface Question {
   type: QuestionType;
   passage: string | null;
   stem: string;
+  stem_image: string | null;
   choices: Choice[] | null;
   correct_answer: string;
   explanation: string | null;
