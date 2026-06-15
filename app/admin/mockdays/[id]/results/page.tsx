@@ -290,17 +290,34 @@ function EditTotal({
   attempt: MockdayResults["attempts"][number];
   onSaved: () => void | Promise<void>;
 }) {
-  const [val, setVal] = useState(String(attempt.total_scaled ?? ""));
+  const [rw, setRw] = useState(String(attempt.rw_scaled ?? ""));
+  const [math, setMath] = useState(String(attempt.math_scaled ?? ""));
+  const [total, setTotal] = useState(String(attempt.total_scaled ?? ""));
+  const [totalEdited, setTotalEdited] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Keep total in sync with the sections unless it's been manually overridden.
+  function syncSections(nextRw: string, nextMath: string) {
+    if (totalEdited) return;
+    const r = Number(nextRw);
+    const m = Number(nextMath);
+    if (Number.isFinite(r) && Number.isFinite(m)) setTotal(String(r + m));
+  }
+
   async function save() {
-    const n = Number(val);
-    if (!Number.isFinite(n)) return;
     setSaving(true);
     setSaved(false);
+    const payload: {
+      rw_scaled?: number;
+      math_scaled?: number;
+      total_scaled?: number;
+    } = {};
+    if (rw !== "") payload.rw_scaled = Number(rw);
+    if (math !== "") payload.math_scaled = Number(math);
+    if (total !== "") payload.total_scaled = Number(total);
     try {
-      await editScore(attempt.attempt_id, { total_scaled: n });
+      await editScore(attempt.attempt_id, payload);
       setSaved(true);
       await onSaved();
     } finally {
@@ -308,21 +325,44 @@ function EditTotal({
     }
   }
 
-  return (
-    <div className="mb-3 flex items-center gap-2">
-      <label className="text-xs text-muted">Override total (400–1600):</label>
+  const field = (
+    label: string,
+    val: string,
+    set: (v: string) => void,
+    max: number,
+  ) => (
+    <label className="flex items-center gap-1.5 text-xs text-muted">
+      {label}
       <input
         type="number"
-        min={400}
-        max={1600}
+        min={label === "Total" ? 400 : 200}
+        max={max}
         step={10}
         value={val}
         onChange={(e) => {
-          setVal(e.target.value);
+          set(e.target.value);
           setSaved(false);
         }}
-        className="w-24 rounded-lg border border-line px-2 py-1 text-sm tabular-nums"
+        className="w-20 rounded-lg border border-line px-2 py-1 text-sm tabular-nums text-ink"
       />
+    </label>
+  );
+
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-3">
+      <span className="text-xs font-medium text-ink">Override scores:</span>
+      {field("R&W", rw, (v) => {
+        setRw(v);
+        syncSections(v, math);
+      }, 800)}
+      {field("Math", math, (v) => {
+        setMath(v);
+        syncSections(rw, v);
+      }, 800)}
+      {field("Total", total, (v) => {
+        setTotal(v);
+        setTotalEdited(true);
+      }, 1600)}
       <button
         onClick={save}
         disabled={saving}
