@@ -18,16 +18,16 @@ export function Logo({
 }) {
   const src =
     variant === "mark"
-      ? "/uniplace-mark.svg"
+      ? "/uniplace-mark.png"
       : variant === "wordmark"
-        ? "/uniplace-wordmark.svg"
-        : "/uniplace-logo.svg";
+        ? "/uniplace-wordmark.png"
+        : "/uniplace-logo.png";
   const dims =
     variant === "mark"
-      ? { width: 130, height: 140 }
+      ? { width: 518, height: 664 }
       : variant === "wordmark"
-        ? { width: 180, height: 48 }
-        : { width: 235, height: 75 };
+        ? { width: 1108, height: 316 }
+        : { width: 552, height: 682 };
 
   return (
     <Image
