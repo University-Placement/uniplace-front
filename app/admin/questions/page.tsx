@@ -256,10 +256,17 @@ function QuestionEditor({
     setSaving(true);
     setErr(null);
     try {
+      // Per choice: typed text overrides the imported image; otherwise keep image.
+      const choices = (form.choices ?? []).map((c) =>
+        c.text && c.text.trim()
+          ? { id: c.id, text: c.text.trim() }
+          : { id: c.id, image: c.image },
+      );
       const payload: QuestionInput = {
         ...form,
-        // Grid-in questions carry no choices.
-        choices: form.type === "mc" ? form.choices : null,
+        // Typing a stem replaces the stem image with text.
+        stem_image: form.stem.trim() ? null : form.stem_image,
+        choices: form.type === "mc" ? choices : null,
       };
       if (editingId == null) await createQuestion(payload);
       else await updateQuestion(editingId, payload);
@@ -316,32 +323,51 @@ function QuestionEditor({
           </Field>
 
           <Field label="Question stem">
+            {form.stem_image && !form.stem.trim() && (
+              <div className="mb-2 rounded-lg border border-line bg-surface p-2">
+                <img src={form.stem_image} alt="Current stem" className="max-h-40" />
+                <p className="mt-1 text-xs text-muted">
+                  Imported image. Type below to replace it with text.
+                </p>
+              </div>
+            )}
             <textarea
               value={form.stem}
               onChange={(e) => set("stem", e.target.value)}
               rows={3}
+              placeholder="Leave blank to keep the image above"
               className="w-full rounded-lg border border-line px-3 py-2"
             />
           </Field>
 
           {form.type === "mc" ? (
-            <Field label="Choices (select the correct one)">
-              <div className="space-y-2">
+            <Field label="Choices (select the correct one; type to replace an image)">
+              <div className="space-y-3">
                 {(form.choices ?? []).map((c, i) => (
-                  <div key={c.id} className="flex items-center gap-2">
+                  <div key={c.id} className="flex items-start gap-2">
                     <input
                       type="radio"
                       name="correct"
+                      className="mt-2"
                       checked={form.correct_answer === c.id}
                       onChange={() => set("correct_answer", c.id)}
                     />
-                    <span className="w-5 font-medium text-muted">{c.id}</span>
-                    <input
-                      value={c.text}
-                      onChange={(e) => setChoiceText(i, e.target.value)}
-                      className="flex-1 rounded-lg border border-line px-3 py-1.5"
-                      placeholder={`Choice ${c.id}`}
-                    />
+                    <span className="mt-1.5 w-5 font-medium text-muted">{c.id}</span>
+                    <div className="flex-1">
+                      {c.image && !(c.text && c.text.trim()) && (
+                        <img
+                          src={c.image}
+                          alt={`Choice ${c.id}`}
+                          className="mb-1 max-h-14 rounded border border-line bg-surface p-1"
+                        />
+                      )}
+                      <input
+                        value={c.text ?? ""}
+                        onChange={(e) => setChoiceText(i, e.target.value)}
+                        className="w-full rounded-lg border border-line px-3 py-1.5"
+                        placeholder={c.image ? "Type to replace this image" : `Choice ${c.id}`}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
