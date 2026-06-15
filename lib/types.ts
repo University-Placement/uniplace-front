@@ -52,6 +52,7 @@ export interface LiveMockday {
   close_at: string | null;
   attempt_id: number | null;
   attempt_status: string | null;
+  requires_code: boolean;
 }
 
 export interface PublicQuestion {
@@ -114,5 +115,6 @@ export interface Mockday {
   math_m2_hard_form_id: number | null;
   rw_routing_threshold: number;
   math_routing_threshold: number;
+  access_code: string | null;
   created_at: string;
 }

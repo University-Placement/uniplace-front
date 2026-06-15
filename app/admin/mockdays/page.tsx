@@ -208,6 +208,7 @@ function MockdayEditor({
       math_m2_hard_form_id: m.math_m2_hard_form_id,
       rw_routing_threshold: m.rw_routing_threshold,
       math_routing_threshold: m.math_routing_threshold,
+      access_code: m.access_code,
     });
   }
 
@@ -240,6 +241,20 @@ function MockdayEditor({
           onChange={(e) => set("name", e.target.value)}
           className="mb-4 w-full rounded-lg border border-line px-3 py-2"
         />
+
+        <label className="mb-1 block text-sm font-medium text-ink">
+          Access code
+        </label>
+        <input
+          value={m.access_code ?? ""}
+          onChange={(e) => set("access_code", e.target.value || null)}
+          placeholder="Leave blank for no code"
+          className="mb-1 w-full rounded-lg border border-line px-3 py-2"
+        />
+        <p className="mb-4 text-xs text-muted">
+          When set, students must enter this code to start. Share it only when
+          you want them to begin.
+        </p>
 
         <h3 className="mb-2 text-sm font-semibold text-ink">Forms</h3>
         <div className="space-y-2">

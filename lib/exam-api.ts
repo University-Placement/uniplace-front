@@ -5,10 +5,10 @@ export function listLiveMockdays() {
   return apiFetch<LiveMockday[]>("/mockdays/live");
 }
 
-export function startAttempt(mockdayId: number) {
+export function startAttempt(mockdayId: number, accessCode?: string) {
   return apiFetch<{ attempt_id: number; mockday_id: number; status: string }>(
     `/mockdays/${mockdayId}/attempts`,
-    { method: "POST" },
+    { method: "POST", body: JSON.stringify({ access_code: accessCode ?? null }) },
   );
 }
 

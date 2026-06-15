@@ -34,15 +34,32 @@ export default function DashboardPage() {
     await updateTask(t.id, { status });
   }
 
+  const [codeFor, setCodeFor] = useState<LiveMockday | null>(null);
+  const [code, setCode] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
+
   async function enter(m: LiveMockday) {
+    // Resuming needs no code; a fresh start on a gated Mockday prompts for it.
+    if (m.requires_code && !m.attempt_id) {
+      setCode("");
+      setCodeError(null);
+      setCodeFor(m);
+      return;
+    }
+    await doStart(m);
+  }
+
+  async function doStart(m: LiveMockday, accessCode?: string) {
     setBusy(m.id);
     setError(null);
     try {
       const attemptId =
-        m.attempt_id ?? (await startAttempt(m.id)).attempt_id;
+        m.attempt_id ?? (await startAttempt(m.id, accessCode)).attempt_id;
       router.push(`/exam/${attemptId}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not start");
+      const msg = e instanceof Error ? e.message : "Could not start";
+      if (codeFor) setCodeError("That code isn't right. Check with your proctor.");
+      else setError(msg);
       setBusy(null);
     }
   }
@@ -151,6 +168,11 @@ export default function DashboardPage() {
                       <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
                         live
                       </span>
+                      {m.requires_code && !m.attempt_id && (
+                        <span className="rounded bg-surface px-2 py-0.5 text-xs font-medium text-muted">
+                          🔒 code required
+                        </span>
+                      )}
                     </div>
                     {m.close_at && (
                       <p className="mt-0.5 text-sm text-muted">
@@ -177,6 +199,54 @@ export default function DashboardPage() {
           )}
         </div>
       </main>
+
+      {codeFor && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/30 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-lg font-semibold text-ink">Enter access code</h2>
+            <p className="mt-1 text-sm text-muted">
+              {codeFor.name} is locked. Enter the code your proctor gives you to
+              begin.
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void doStart(codeFor, code);
+              }}
+            >
+              <input
+                autoFocus
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setCodeError(null);
+                }}
+                placeholder="Access code"
+                className="mt-4 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              />
+              {codeError && (
+                <p className="mt-2 text-sm text-red-700">{codeError}</p>
+              )}
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCodeFor(null)}
+                  className="rounded-lg border border-line px-4 py-2 text-sm hover:bg-surface"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!code.trim() || busy === codeFor.id}
+                  className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+                >
+                  {busy === codeFor.id ? "Checking…" : "Start"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
