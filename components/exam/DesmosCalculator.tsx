@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// Desmos API key. Defaults to Desmos's published test key, which is unrestricted
-// and works on any domain. Override with your own via NEXT_PUBLIC_DESMOS_API_KEY
-// (make sure that key allows your deployment domain in the Desmos dashboard).
-const DESMOS_API_KEY =
-  process.env.NEXT_PUBLIC_DESMOS_API_KEY || "dcb31709b452b1cf9dc26972add0fda6";
+// Desmos's published demo API key — domain-unrestricted, so it works on any
+// host (localhost, vercel.app, etc.). A custom key from the Desmos dashboard
+// only works if your exact deployment domain is whitelisted on that key, which
+// is what was failing here — so we use the universal key for reliability.
+const DESMOS_API_KEY = "dcb31709b452b1cf9dc26972add0fda6";
 const SRC = `https://www.desmos.com/api/v1.11/calculator.js?apiKey=${DESMOS_API_KEY}`;
 
 declare global {
