@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   assignHomework,
+  deleteHomework,
   getHomeworkTracking,
   listStudents,
   type HomeworkAssignment,
@@ -20,6 +21,7 @@ export default function HomeworkPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [tracking, setTracking] = useState<HomeworkAssignment[]>([]);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const loadTracking = useCallback(() => {
     getHomeworkTracking().then(setTracking).catch(() => {});
@@ -58,6 +60,27 @@ export default function HomeworkPage() {
       loadTracking();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function remove(a: HomeworkAssignment) {
+    if (
+      !confirm(
+        `Delete "${a.title}"? This removes it from all ${a.total} student${
+          a.total === 1 ? "" : "s"
+        }' boards.`,
+      )
+    )
+      return;
+    setDeleting(a.assignment_id);
+    try {
+      await deleteHomework(a.assignment_id);
+      setTracking((prev) =>
+        prev.filter((x) => x.assignment_id !== a.assignment_id),
+      );
+      if (expanded === a.assignment_id) setExpanded(null);
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -182,29 +205,39 @@ export default function HomeworkPage() {
                 key={a.assignment_id}
                 className="rounded-2xl border border-line bg-white"
               >
-                <button
-                  onClick={() => setExpanded(isOpen ? null : a.assignment_id)}
-                  className="flex w-full items-center gap-4 px-5 py-4 text-left"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-ink">{a.title}</p>
-                    <p className="text-xs text-muted">
-                      {a.counts.done}/{a.total} done · {a.counts.doing} in progress ·{" "}
-                      {a.counts.todo} to do
-                    </p>
-                  </div>
-                  <div className="hidden w-40 sm:block">
-                    <div className="h-2 overflow-hidden rounded-full bg-surface">
-                      <div
-                        className="h-full rounded-full bg-green-500"
-                        style={{ width: `${pct}%` }}
-                      />
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setExpanded(isOpen ? null : a.assignment_id)}
+                    className="flex flex-1 items-center gap-4 px-5 py-4 text-left"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-ink">{a.title}</p>
+                      <p className="text-xs text-muted">
+                        {a.counts.done}/{a.total} done · {a.counts.doing} in progress ·{" "}
+                        {a.counts.todo} to do
+                      </p>
                     </div>
-                  </div>
-                  <span className="w-12 text-right text-sm font-semibold tabular-nums text-ink">
-                    {pct}%
-                  </span>
-                </button>
+                    <div className="hidden w-40 sm:block">
+                      <div className="h-2 overflow-hidden rounded-full bg-surface">
+                        <div
+                          className="h-full rounded-full bg-green-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="w-12 text-right text-sm font-semibold tabular-nums text-ink">
+                      {pct}%
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => remove(a)}
+                    disabled={deleting === a.assignment_id}
+                    className="mr-3 shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-muted transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                    aria-label={`Delete ${a.title}`}
+                  >
+                    {deleting === a.assignment_id ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
 
                 {isOpen && (
                   <div className="border-t border-line px-5 py-3">

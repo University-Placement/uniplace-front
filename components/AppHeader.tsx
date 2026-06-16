@@ -11,6 +11,7 @@ const STUDENT_NAV = [
   { href: "/plan", label: "Class Plan" },
   { href: "/results", label: "My Results" },
   { href: "/board", label: "Study Board" },
+  { href: "/det", label: "DET" },
 ];
 
 function initials(name: string): string {

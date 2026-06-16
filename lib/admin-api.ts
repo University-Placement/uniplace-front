@@ -200,3 +200,9 @@ export interface HomeworkAssignment {
 export function getHomeworkTracking() {
   return apiFetch<HomeworkAssignment[]>("/admin/homework");
 }
+
+export function deleteHomework(assignmentId: string) {
+  return apiFetch<void>(`/admin/homework/${assignmentId}`, {
+    method: "DELETE",
+  });
+}

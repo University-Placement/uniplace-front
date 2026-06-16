@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/Logo";
+import { FlipWord } from "@/components/FlipWord";
 
 const NAV = ["Home", "About", "Resources", "Contact"];
 
@@ -57,14 +58,15 @@ export default function LoginPage() {
             Your path to
             <br />
             ace the{" "}
-            <span className="underline decoration-brand decoration-4 underline-offset-[6px]">
-              DSAT
-            </span>{" "}
+            <FlipWord
+              words={["DSAT", "DET"]}
+              className="text-brand underline decoration-brand decoration-4 underline-offset-[6px]"
+            />{" "}
             starts here.
           </h1>
           <p className="mt-5 max-w-md text-lg text-muted">
-            UniPlace helps Lala&apos;s students navigate the Digital SAT process
-            with personalized guidance, resources, and support.
+            UniPlace is Lala&apos;s hub for the Digital SAT and the Duolingo
+            English Test — guidance, practice, and support in one place.
           </p>
 
           {/* Sign-in card */}
