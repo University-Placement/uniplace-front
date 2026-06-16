@@ -7,6 +7,7 @@ import {
   listQuestions,
   updateQuestion,
 } from "@/lib/admin-api";
+import { CropModal } from "@/components/admin/CropModal";
 import type {
   Choice,
   Difficulty,
@@ -240,6 +241,10 @@ function QuestionEditor({
   const [form, setForm] = useState<QuestionInput>(initial);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [cropTarget, setCropTarget] = useState<{
+    url: string;
+    apply: (u: string) => void;
+  } | null>(null);
 
   function set<K extends keyof QuestionInput>(key: K, value: QuestionInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -249,6 +254,15 @@ function QuestionEditor({
     setForm((f) => {
       const choices = (f.choices ?? []).map((c, i) =>
         i === idx ? { ...c, text } : c,
+      );
+      return { ...f, choices };
+    });
+  }
+
+  function setChoiceImage(idx: number, image: string) {
+    setForm((f) => {
+      const choices = (f.choices ?? []).map((c, i) =>
+        i === idx ? { ...c, image } : c,
       );
       return { ...f, choices };
     });
@@ -328,9 +342,23 @@ function QuestionEditor({
             {form.stem_image && !form.stem.trim() && (
               <div className="mb-2 rounded-lg border border-line bg-surface p-2">
                 <img src={form.stem_image} alt="Current stem" className="max-h-40" />
-                <p className="mt-1 text-xs text-muted">
-                  Imported image. Type below to replace it with text.
-                </p>
+                <div className="mt-1 flex items-center justify-between">
+                  <p className="text-xs text-muted">
+                    Imported image. Type below to replace with text.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCropTarget({
+                        url: form.stem_image!,
+                        apply: (u) => set("stem_image", u),
+                      })
+                    }
+                    className="rounded border border-line px-2 py-0.5 text-xs font-medium hover:bg-white"
+                  >
+                    ✂ Crop
+                  </button>
+                </div>
               </div>
             )}
             <textarea
@@ -357,11 +385,25 @@ function QuestionEditor({
                     <span className="mt-1.5 w-5 font-medium text-muted">{c.id}</span>
                     <div className="flex-1">
                       {c.image && !(c.text && c.text.trim()) && (
-                        <img
-                          src={c.image}
-                          alt={`Choice ${c.id}`}
-                          className="mb-1 max-h-14 rounded border border-line bg-surface p-1"
-                        />
+                        <div className="mb-1 flex items-center gap-2">
+                          <img
+                            src={c.image}
+                            alt={`Choice ${c.id}`}
+                            className="max-h-14 rounded border border-line bg-surface p-1"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCropTarget({
+                                url: c.image!,
+                                apply: (u) => setChoiceImage(i, u),
+                              })
+                            }
+                            className="rounded border border-line px-2 py-0.5 text-xs font-medium hover:bg-surface"
+                          >
+                            ✂ Crop
+                          </button>
+                        </div>
                       )}
                       <input
                         value={c.text ?? ""}
@@ -457,6 +499,17 @@ function QuestionEditor({
           </div>
         </div>
       </div>
+
+      {cropTarget && (
+        <CropModal
+          url={cropTarget.url}
+          onCancel={() => setCropTarget(null)}
+          onSaved={(u) => {
+            cropTarget.apply(u);
+            setCropTarget(null);
+          }}
+        />
+      )}
     </div>
   );
 }
