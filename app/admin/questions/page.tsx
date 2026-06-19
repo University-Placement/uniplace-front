@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   createQuestion,
   deleteQuestion,
+  listMockdays,
   listQuestions,
   updateQuestion,
 } from "@/lib/admin-api";
@@ -11,11 +12,18 @@ import { CropModal } from "@/components/admin/CropModal";
 import type {
   Choice,
   Difficulty,
+  Mockday,
+  Placement,
   Question,
   QuestionInput,
   QuestionType,
   Section,
 } from "@/lib/types";
+
+function placementLabel(p: Placement): string {
+  const sec = p.section === "rw" ? "R&W" : "Math";
+  return `${p.mockday ?? "—"} · ${sec} M${p.module} · Q${p.position}`;
+}
 
 const EMPTY_CHOICES: Choice[] = [
   { id: "A", text: "" },
@@ -49,9 +57,17 @@ export default function QuestionsPage() {
   const [fSection, setFSection] = useState("");
   const [fType, setFType] = useState("");
   const [search, setSearch] = useState("");
+  const [fMockday, setFMockday] = useState("");
+  const [fModule, setFModule] = useState("");
+  const [fReviewed, setFReviewed] = useState("");
+  const [mockdays, setMockdays] = useState<Mockday[]>([]);
 
   const [editing, setEditing] = useState<QuestionInput | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    listMockdays().then(setMockdays).catch(() => {});
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -61,6 +77,9 @@ export default function QuestionsPage() {
         section: fSection || undefined,
         type: fType || undefined,
         search: search || undefined,
+        mockday_id: fMockday ? Number(fMockday) : undefined,
+        module: fModule ? Number(fModule) : undefined,
+        reviewed: fReviewed === "" ? undefined : fReviewed === "yes",
       });
       setQuestions(data);
     } catch (e) {
@@ -68,11 +87,26 @@ export default function QuestionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [fSection, fType, search]);
+  }, [fSection, fType, search, fMockday, fModule, fReviewed]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function toggleReviewed(q: Question) {
+    const next = !q.reviewed;
+    setQuestions((prev) =>
+      prev.map((x) => (x.id === q.id ? { ...x, reviewed: next } : x)),
+    );
+    try {
+      await updateQuestion(q.id, { reviewed: next });
+    } catch {
+      // revert on failure
+      setQuestions((prev) =>
+        prev.map((x) => (x.id === q.id ? { ...x, reviewed: !next } : x)),
+      );
+    }
+  }
 
   function startNew() {
     setEditingId(null);
@@ -138,6 +172,36 @@ export default function QuestionsPage() {
           <option value="mc">Multiple choice</option>
           <option value="spr">Grid-in (SPR)</option>
         </select>
+        <select
+          value={fMockday}
+          onChange={(e) => setFMockday(e.target.value)}
+          className="rounded-lg border border-line px-3 py-2 text-sm"
+        >
+          <option value="">All Mockdays</option>
+          {mockdays.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={fModule}
+          onChange={(e) => setFModule(e.target.value)}
+          className="rounded-lg border border-line px-3 py-2 text-sm"
+        >
+          <option value="">All modules</option>
+          <option value="1">Module 1</option>
+          <option value="2">Module 2</option>
+        </select>
+        <select
+          value={fReviewed}
+          onChange={(e) => setFReviewed(e.target.value)}
+          className="rounded-lg border border-line px-3 py-2 text-sm"
+        >
+          <option value="">Reviewed: all</option>
+          <option value="yes">Reviewed ✓</option>
+          <option value="no">Not reviewed</option>
+        </select>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -167,15 +231,39 @@ export default function QuestionsPage() {
               className="flex items-start justify-between gap-4 rounded-xl border border-line bg-white p-4"
             >
               <div className="min-w-0">
-                <div className="mb-1 flex gap-2 text-xs">
+                <div className="mb-1 flex flex-wrap items-center gap-2 text-xs">
+                  {(q.placements ?? []).map((p, i) => (
+                    <span
+                      key={i}
+                      className="rounded bg-ink px-1.5 py-0.5 font-medium text-white"
+                    >
+                      {placementLabel(p)}
+                    </span>
+                  ))}
                   <Tag>{q.section === "rw" ? "R&W" : "Math"}</Tag>
                   <Tag>{q.type === "mc" ? "MC" : "SPR"}</Tag>
                   {q.difficulty && <Tag>{q.difficulty}</Tag>}
                   {q.skill && <Tag muted>{q.skill}</Tag>}
                 </div>
-                <p className="truncate text-sm text-ink">{q.stem}</p>
+                {q.stem_image ? (
+                  <img
+                    src={q.stem_image}
+                    alt={`Question ${q.id}`}
+                    className="mt-1 max-h-16 rounded border border-line bg-surface p-1"
+                  />
+                ) : (
+                  <p className="truncate text-sm text-ink">{q.stem}</p>
+                )}
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 items-center gap-3">
+                <label className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-muted">
+                  <input
+                    type="checkbox"
+                    checked={!!q.reviewed}
+                    onChange={() => toggleReviewed(q)}
+                  />
+                  Reviewed
+                </label>
                 <button
                   onClick={() => startEdit(q)}
                   className="rounded-lg border border-line px-3 py-1.5 text-sm hover:bg-surface"

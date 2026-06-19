@@ -26,10 +26,24 @@ export interface Question {
   skill: string | null;
   difficulty: Difficulty | null;
   source: string | null;
+  reviewed?: boolean;
+  placements?: Placement[];
   created_at: string;
 }
 
-export type QuestionInput = Omit<Question, "id" | "created_at">;
+export interface Placement {
+  mockday_id: number | null;
+  mockday: string | null;
+  section: Section;
+  module: number;
+  position: number;
+  form: string;
+}
+
+export type QuestionInput = Omit<
+  Question,
+  "id" | "created_at" | "placements"
+>;
 
 export interface Form {
   id: number;

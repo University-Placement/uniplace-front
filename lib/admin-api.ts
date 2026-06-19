@@ -8,15 +8,23 @@ import type {
 } from "@/lib/types";
 
 // ---- Questions ----------------------------------------------------------- //
-export function listQuestions(params: {
-  section?: string;
-  type?: string;
-  search?: string;
-} = {}) {
+export function listQuestions(
+  params: {
+    section?: string;
+    type?: string;
+    search?: string;
+    mockday_id?: number;
+    module?: number;
+    reviewed?: boolean;
+  } = {},
+) {
   const q = new URLSearchParams();
   if (params.section) q.set("section", params.section);
   if (params.type) q.set("type", params.type);
   if (params.search) q.set("search", params.search);
+  if (params.mockday_id != null) q.set("mockday_id", String(params.mockday_id));
+  if (params.module != null) q.set("module", String(params.module));
+  if (params.reviewed != null) q.set("reviewed", String(params.reviewed));
   const qs = q.toString();
   return apiFetch<Question[]>(`/admin/questions${qs ? `?${qs}` : ""}`);
 }
