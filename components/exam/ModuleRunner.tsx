@@ -180,7 +180,7 @@ export function ModuleRunner({
               <img
                 src={current.stem_image}
                 alt={`Question ${idx + 1}`}
-                className="mb-6 w-full"
+                className="mb-6 max-w-full"
               />
             ) : (
               <p className="mb-6 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">
@@ -198,10 +198,10 @@ export function ModuleRunner({
                   // UI draws a consistent letter circle. R&W images keep their label.
                   const showLetter = current.section === "math";
                   return (
-                    <div key={c.id} className="flex items-center gap-2">
+                    <div key={c.id} className="flex items-center gap-3">
                       <button
                         onClick={() => persist(current.id, { selected: c.id })}
-                        className={`flex flex-1 items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition ${
+                        className={`flex min-w-0 flex-1 items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition ${
                           isSel ? "border-brand bg-brand/5" : "border-line hover:border-brand/40"
                         } ${isElim ? "opacity-40" : ""}`}
                       >
@@ -214,30 +214,34 @@ export function ModuleRunner({
                             {c.id}
                           </span>
                         )}
-                        {c.image ? (
-                          <img
-                            src={c.image}
-                            alt={`Choice ${c.id}`}
-                            className={`${
-                              current.section === "math"
-                                ? "max-h-14 max-w-full object-contain object-left"
-                                : "w-full"
-                            } ${isElim ? "line-through" : ""}`}
-                          />
-                        ) : (
-                          <span className={`text-[15px] text-ink ${isElim ? "line-through" : ""}`}>
-                            {c.text}
-                          </span>
-                        )}
+                        <span className="min-w-0 flex-1">
+                          {c.image ? (
+                            <img
+                              src={c.image}
+                              alt={`Choice ${c.id}`}
+                              className={`${
+                                current.section === "math"
+                                  ? "max-h-14 max-w-full object-contain object-left"
+                                  : "w-full"
+                              } ${isElim ? "opacity-60" : ""}`}
+                            />
+                          ) : (
+                            <span className={`text-[15px] text-ink ${isElim ? "line-through" : ""}`}>
+                              {c.text}
+                            </span>
+                          )}
+                        </span>
                       </button>
                       <button
                         onClick={() => toggleEliminate(current.id, c.id)}
-                        title="Cross out"
-                        className={`h-8 w-8 shrink-0 rounded-full border text-xs font-semibold ${
-                          isElim ? "border-ink bg-ink text-white" : "border-line text-muted hover:bg-surface"
+                        title={isElim ? "Undo cross out" : "Cross out"}
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition ${
+                          isElim
+                            ? "border-ink bg-ink text-white"
+                            : "border-line text-muted hover:bg-surface"
                         }`}
                       >
-                        {c.id}
+                        <span className={isElim ? "" : "line-through decoration-2"}>{c.id}</span>
                       </button>
                     </div>
                   );
