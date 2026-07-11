@@ -218,9 +218,11 @@ export function ModuleRunner({
                           <img
                             src={c.image}
                             alt={`Choice ${c.id}`}
-                            className={`${current.section === "math" ? "max-h-16" : "w-full"} ${
-                              isElim ? "line-through" : ""
-                            }`}
+                            className={`${
+                              current.section === "math"
+                                ? "max-h-14 max-w-full object-contain object-left"
+                                : "w-full"
+                            } ${isElim ? "line-through" : ""}`}
                           />
                         ) : (
                           <span className={`text-[15px] text-ink ${isElim ? "line-through" : ""}`}>
