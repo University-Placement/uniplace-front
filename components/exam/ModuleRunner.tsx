@@ -209,7 +209,7 @@ export function ModuleRunner({
                               alt={`Choice ${c.id}`}
                               className={`${
                                 current.section === "math"
-                                  ? "max-h-14 max-w-full object-contain object-left"
+                                  ? "max-h-7 max-w-full object-contain object-left"
                                   : "w-full"
                               } ${isElim ? "opacity-60" : ""}`}
                             />
