@@ -194,9 +194,6 @@ export function ModuleRunner({
                 {current.choices.map((c) => {
                   const isSel = answers.get(current.id)?.selected === c.id;
                   const isElim = eliminated.get(current.id)?.has(c.id);
-                  // Math choice images are cropped without the "A." label, so the
-                  // UI draws a consistent letter circle. R&W images keep their label.
-                  const showLetter = current.section === "math";
                   return (
                     <div key={c.id} className="flex items-center gap-3">
                       <button
@@ -205,15 +202,6 @@ export function ModuleRunner({
                           isSel ? "border-brand bg-brand/5" : "border-line hover:border-brand/40"
                         } ${isElim ? "opacity-40" : ""}`}
                       >
-                        {showLetter && (
-                          <span
-                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
-                              isSel ? "border-brand bg-brand text-white" : "border-line text-muted"
-                            }`}
-                          >
-                            {c.id}
-                          </span>
-                        )}
                         <span className="min-w-0 flex-1">
                           {c.image ? (
                             <img
