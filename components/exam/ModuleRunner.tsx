@@ -190,26 +190,42 @@ export function ModuleRunner({
 
             {/* choices or grid-in */}
             {current.type === "mc" && current.choices ? (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {current.choices.map((c) => {
                   const isSel = answers.get(current.id)?.selected === c.id;
                   const isElim = eliminated.get(current.id)?.has(c.id);
+                  // Math choice images are cropped without the "A." label, so the
+                  // UI draws a consistent letter circle. R&W images keep their label.
+                  const showLetter = current.section === "math";
                   return (
                     <div key={c.id} className="flex items-center gap-2">
                       <button
                         onClick={() => persist(current.id, { selected: c.id })}
-                        className={`flex flex-1 items-center rounded-xl border-2 px-4 py-2 text-left transition ${
+                        className={`flex flex-1 items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-left transition ${
                           isSel ? "border-brand bg-brand/5" : "border-line hover:border-brand/40"
                         } ${isElim ? "opacity-40" : ""}`}
                       >
+                        {showLetter && (
+                          <span
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
+                              isSel ? "border-brand bg-brand text-white" : "border-line text-muted"
+                            }`}
+                          >
+                            {c.id}
+                          </span>
+                        )}
                         {c.image ? (
                           <img
                             src={c.image}
                             alt={`Choice ${c.id}`}
-                            className={`max-h-20 ${isElim ? "line-through" : ""}`}
+                            className={`${current.section === "math" ? "max-h-16" : "w-full"} ${
+                              isElim ? "line-through" : ""
+                            }`}
                           />
                         ) : (
-                          <span>{c.text}</span>
+                          <span className={`text-[15px] text-ink ${isElim ? "line-through" : ""}`}>
+                            {c.text}
+                          </span>
                         )}
                       </button>
                       <button
