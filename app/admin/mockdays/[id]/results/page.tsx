@@ -148,9 +148,13 @@ export default function ResultsPage() {
                       className="cursor-pointer border-t border-line hover:bg-surface/50"
                     >
                       <td className="px-4 py-3">
-                        <div className="font-medium text-ink">
-                          {a.full_name ?? "—"}
-                        </div>
+                        <Link
+                          href={`/admin/attempts/${a.attempt_id}/review?mockday=${mockdayId}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="font-medium text-brand hover:underline"
+                        >
+                          {a.full_name ?? a.email ?? "—"}
+                        </Link>
                         <div className="text-xs text-muted">{a.email}</div>
                       </td>
                       <td className="px-4 py-3">
@@ -217,6 +221,12 @@ export default function ResultsPage() {
                     {isOpen && (
                       <tr className="border-t border-line bg-surface/40">
                         <td colSpan={7} className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                          <Link
+                            href={`/admin/attempts/${a.attempt_id}/review?mockday=${mockdayId}`}
+                            className="mb-3 inline-flex items-center gap-1 rounded-lg border border-brand px-3 py-1.5 text-xs font-medium text-brand hover:bg-brand/5"
+                          >
+                            View all responses →
+                          </Link>
                           {done && (
                             <EditTotal attempt={a} onSaved={load} />
                           )}
@@ -268,7 +278,8 @@ export default function ResultsPage() {
       <p className="mt-4 text-xs text-muted">
         Section scores are 200–800 and the total is 400–1600, estimated from a raw
         linear curve (College Board doesn&apos;t publish their exact conversion).
-        Click a student to see the per-module breakdown.
+        Click a student&apos;s name to see every question they answered; click the
+        row for the per-module breakdown.
       </p>
     </main>
   );

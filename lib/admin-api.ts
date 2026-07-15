@@ -148,6 +148,47 @@ export function getMockdayResults(id: number) {
   return apiFetch<MockdayResults>(`/admin/mockdays/${id}/results`);
 }
 
+export interface AttemptReviewQuestion {
+  number: number;
+  section: string;
+  module: number;
+  type: string;
+  domain: string | null;
+  skill: string | null;
+  difficulty: string | null;
+  stem_image: string | null;
+  choices: { id: string; image?: string | null; text?: string | null }[] | null;
+  selected_answer: string | null;
+  correct_answer: string | null;
+  is_correct: boolean;
+  answered: boolean;
+  explanation: string | null;
+  explanation_image: string | null;
+}
+
+export interface AttemptReview {
+  attempt: {
+    id: number;
+    status: string;
+    started_at: string | null;
+    submitted_at: string | null;
+  };
+  student: { full_name: string | null; email: string | null };
+  mockday: { id: number; name: string } | null;
+  summary: {
+    correct: number;
+    answered: number;
+    total: number;
+    rw: { correct: number; answered: number; total: number };
+    math: { correct: number; answered: number; total: number };
+  };
+  questions: AttemptReviewQuestion[];
+}
+
+export function getAttemptReview(attemptId: number) {
+  return apiFetch<AttemptReview>(`/admin/attempts/${attemptId}/review`);
+}
+
 export function editScore(
   attemptId: number,
   body: { rw_scaled?: number; math_scaled?: number; total_scaled?: number },
